@@ -11,6 +11,9 @@
       cdkScrollable
     >
       @if (!pluginEmbedId()) {
+        @if (isTodayContext()) {
+          <flux-habit-today />
+        }
         <header class="work-view-header task-list-wrapper">
           @if (estimateRemainingToday() || workingToday()) {
             <div

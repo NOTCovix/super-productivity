@@ -1,0 +1,36 @@
+.habit-row {
+  display: flex;
+  align-items: center;
+  gap: var(--s);
+  padding: var(--s-half) 0;
+  border-bottom: 1px solid var(--separator-color);
+}
+.habit-name {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  small {
+    display: block;
+    color: var(--text-color-muted);
+  }
+}
+.habit-value {
+  width: 5em;
+  min-height: var(--s5);
+}
+.habit-status {
+  font-size: var(--font-size-sm);
+  color: var(--text-color-muted);
+}
+.success {
+  color: var(--color-success);
+}
+@media (max-width: 440px) {
+  .habit-row {
+    flex-wrap: wrap;
+  }
+  .habit-status {
+    flex-basis: 100%;
+    order: 1;
+  }
+}

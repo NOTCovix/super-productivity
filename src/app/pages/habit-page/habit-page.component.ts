@@ -2,14 +2,16 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SimpleCounterService } from '../../features/simple-counter/simple-counter.service';
 import { HabitTrackerComponent } from '../../features/simple-counter/habit-tracker/habit-tracker.component';
+import { HabitManagerComponent } from '../../features/habits/habit-manager.component';
 import { map } from 'rxjs/operators';
 
 @Component({
   selector: 'habit-page',
   standalone: true,
-  imports: [CommonModule, HabitTrackerComponent],
+  imports: [CommonModule, HabitTrackerComponent, HabitManagerComponent],
   template: `
     <div class="page-wrapper">
+      <flux-habit-manager />
       <habit-tracker
         [simpleCounters]="(simpleCounters$ | async) || []"
         [disabledSimpleCounters]="(disabledSimpleCounters$ | async) || []"

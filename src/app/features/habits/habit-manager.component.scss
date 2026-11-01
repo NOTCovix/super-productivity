@@ -1,0 +1,52 @@
+.habits {
+  padding: var(--s2) 0;
+}
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s);
+}
+.editor {
+  display: grid;
+  gap: var(--s2);
+  padding: var(--s2);
+  background: var(--card-bg);
+}
+.editor > label {
+  display: grid;
+  gap: var(--s-half);
+}
+.weekday {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-half);
+  margin-right: var(--s);
+}
+.habit-card {
+  padding: var(--s2) 0;
+  border-bottom: 1px solid var(--separator-color);
+}
+.calendar {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: var(--s-half);
+}
+.calendar-day {
+  min-height: var(--s6);
+  padding: var(--s-half);
+  color: var(--text-color);
+  background: var(--card-bg);
+  border: 1px solid var(--separator-color);
+  small {
+    display: block;
+    overflow-wrap: anywhere;
+    font-size: var(--font-size-xs);
+  }
+  &.completed {
+    border-color: var(--color-success);
+  }
+  &.incomplete {
+    border-color: var(--color-warning);
+  }
+}

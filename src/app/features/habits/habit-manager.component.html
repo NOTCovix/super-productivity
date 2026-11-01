@@ -1,0 +1,275 @@
+<section
+  class="habits"
+  aria-labelledby="flux-habits-title"
+>
+  <div class="toolbar">
+    <h2 id="flux-habits-title">{{ T.F.HABITS.TITLE | translate }}</h2>
+    <button
+      mat-stroked-button
+      (click)="edit()"
+    >
+      {{ T.F.HABITS.ADD | translate }}
+    </button>
+  </div>
+  @if (service.data().invalidRecords) {
+    <p role="alert">{{ T.F.HABITS.INVALID_DATA | translate }}</p>
+  }
+  @if (editing()) {
+    <form
+      #form="ngForm"
+      (ngSubmit)="form.valid && save()"
+      class="editor"
+    >
+      <label
+        >{{ T.F.HABITS.NAME | translate }}
+        <input
+          name="name"
+          [(ngModel)]="model.name"
+          required
+          maxlength="120"
+        />
+      </label>
+      <label
+        >{{ T.F.HABITS.DESCRIPTION | translate }}
+        <textarea
+          name="description"
+          [(ngModel)]="model.description"
+          maxlength="2000"
+        ></textarea>
+      </label>
+      <formly-form
+        [form]="iconForm"
+        [fields]="iconFields"
+        [model]="model"
+      />
+      <div>
+        <input-color-picker
+          [label]="T.F.HABITS.COLOR | translate"
+          [value]="model.color || '#808080'"
+          (valueChange)="model.color = $event"
+        />
+        <button
+          mat-button
+          type="button"
+          (click)="model.color = ''"
+        >
+          {{ T.F.HABITS.CLEAR | translate }}
+        </button>
+      </div>
+      <label
+        >{{ T.F.HABITS.TYPE | translate }}
+        <select
+          name="type"
+          [ngModel]="model.rule.type"
+          (ngModelChange)="changeType($event)"
+        >
+          <option value="boolean">{{ T.F.HABITS.BOOLEAN | translate }}</option>
+          <option value="increase">{{ T.F.HABITS.INCREASE | translate }}</option>
+          <option value="limit">{{ T.F.HABITS.LIMIT | translate }}</option>
+        </select>
+      </label>
+      @if (model.rule.type !== 'boolean') {
+        <label
+          >{{ T.F.HABITS.UNIT | translate }}
+          <input
+            name="unit"
+            [(ngModel)]="model.rule.unit"
+            maxlength="40"
+            list="habit-units"
+          />
+          <datalist id="habit-units">
+            <option>minutes</option>
+            <option>pages</option>
+            <option>km</option>
+            <option>repetitions</option>
+            <option>mg</option>
+          </datalist>
+        </label>
+        <label
+          >{{ T.F.HABITS.TARGET | translate }}
+          <input
+            name="target"
+            type="number"
+            step="any"
+            [min]="model.rule.type === 'increase' ? 0.000001 : 0"
+            [(ngModel)]="model.rule.target"
+          />
+        </label>
+        @if (model.rule.type === 'limit') {
+          <p>{{ T.F.HABITS.LIMIT_HELP | translate }}</p>
+        }
+        <p>{{ T.F.HABITS.NO_TARGET_HELP | translate }}</p>
+      }
+      <label
+        >{{ T.F.HABITS.START | translate }}
+        <input
+          name="start"
+          type="date"
+          min="2000-01-01"
+          [max]="service.today()"
+          [(ngModel)]="model.start"
+          [disabled]="!!model.id"
+          required
+        />
+      </label>
+      <fieldset>
+        <legend>{{ T.F.HABITS.SCHEDULE | translate }}</legend>
+        @for (label of weekdays; track $index; let i = $index) {
+          <label class="weekday"
+            ><input
+              type="checkbox"
+              [checked]="model.rule.weekdays.includes(i)"
+              (change)="toggleWeekday(i)"
+            />{{ label | translate }}</label
+          >
+        }
+      </fieldset>
+      @if (error()) {
+        <p role="alert">{{ T.F.HABITS.SAVE_ERROR | translate }}</p>
+      }
+      <div>
+        <button
+          mat-flat-button
+          color="primary"
+          type="submit"
+          [disabled]="form.invalid || !model.rule.weekdays.length"
+        >
+          {{ T.G.SAVE | translate }}
+        </button>
+        <button
+          mat-button
+          type="button"
+          (click)="editing.set(false)"
+        >
+          {{ T.G.CANCEL | translate }}
+        </button>
+      </div>
+    </form>
+  }
+  @if (!rows().length) {
+    <p>{{ T.F.HABITS.EMPTY | translate }}</p>
+  }
+  <div class="toolbar">
+    <label
+      >{{ T.F.HABITS.LOG_DATE | translate }}
+      <input
+        type="date"
+        min="2000-01-01"
+        [max]="service.today()"
+        [ngModel]="day()"
+        (ngModelChange)="selectDay($event)"
+    /></label>
+    <button
+      mat-button
+      (click)="selectedDay.set('')"
+    >
+      {{ T.F.SIMPLE_COUNTER.HABIT_TRACKER.TODAY | translate }}
+    </button>
+  </div>
+  @for (row of rows(); track row.habit.id) {
+    <article class="habit-card">
+      @if (day() >= row.habit.start) {
+        <flux-habit-row
+          [habit]="row.habit"
+          [day]="day()"
+        />
+      } @else {
+        <h3>{{ row.habit.name }}</h3>
+      }
+      @if (row.habit.description) {
+        <p>{{ row.habit.description }}</p>
+      }
+      <div class="toolbar">
+        <button
+          mat-button
+          (click)="edit(row.habit)"
+        >
+          {{ T.G.EDIT | translate }}
+        </button>
+        <button
+          mat-button
+          (click)="service.archive(row.habit, !row.enabled)"
+        >
+          {{ (row.enabled ? T.F.HABITS.ARCHIVE : T.F.HABITS.RESTORE) | translate }}
+        </button>
+        <button
+          mat-button
+          color="warn"
+          (click)="delete(row.habit)"
+        >
+          {{ T.G.DELETE | translate }}
+        </button>
+      </div>
+      <details>
+        <summary>{{ T.F.HABITS.HISTORY | translate }}</summary>
+        <p>
+          {{ T.F.HABITS.CURRENT_STREAK | translate }}: {{ row.stats.current }} ·
+          {{ T.F.HABITS.LONGEST_STREAK | translate }}: {{ row.stats.longest }}
+        </p>
+        <p>
+          {{ T.F.HABITS.WEEK | translate }}: {{ percent(row.stats.week) }} ·
+          {{ T.F.HABITS.MISSING | translate }}: {{ row.stats.week.missing }} ·
+          {{ T.F.HABITS.SKIPPED | translate }}: {{ row.stats.week.skipped }}
+        </p>
+        <p>
+          {{ T.F.HABITS.MONTH | translate }}: {{ percent(row.stats.month) }} ·
+          {{ T.F.HABITS.MISSING | translate }}: {{ row.stats.month.missing }} ·
+          {{ T.F.HABITS.SKIPPED | translate }}: {{ row.stats.month.skipped }}
+        </p>
+        <p>{{ T.F.HABITS.ANALYTICS_HELP | translate }}</p>
+        <div class="toolbar">
+          <button
+            mat-icon-button
+            (click)="monthOffset.set(monthOffset() - 1)"
+            [attr.aria-label]="T.F.HABITS.PREV_MONTH | translate"
+          >
+            <mat-icon>chevron_left</mat-icon>
+          </button>
+          <span>{{ month() }}</span>
+          <button
+            mat-icon-button
+            [disabled]="monthOffset() >= 0"
+            (click)="monthOffset.set(monthOffset() + 1)"
+            [attr.aria-label]="T.F.HABITS.NEXT_MONTH | translate"
+          >
+            <mat-icon>chevron_right</mat-icon>
+          </button>
+        </div>
+        <div class="calendar">
+          @for (i of [1, 2, 3, 4, 5, 6, 0]; track i) {
+            <small>{{ (weekdays[i] | translate).slice(0, 2) }}</small>
+          }
+          @for (i of leadingDays(); track i) {
+            <span aria-hidden="true"></span>
+          }
+          @for (cell of row.days; track cell.day) {
+            <button
+              type="button"
+              class="calendar-day focus-ring"
+              [class.completed]="cell.status === 'completed'"
+              [class.incomplete]="cell.status === 'incomplete'"
+              [disabled]="cell.day < row.habit.start"
+              (click)="selectDay(cell.day)"
+              [attr.aria-pressed]="cell.day === day()"
+              [attr.aria-label]="cell.day + ' ' + (statusKeys[cell.status] | translate)"
+              [title]="cell.day + ' ' + (statusKeys[cell.status] | translate)"
+            >
+              {{ cell.day.slice(-2)
+              }}<small>{{
+                cell.status === 'completed'
+                  ? '✓'
+                  : cell.status === 'incomplete'
+                    ? '×'
+                    : cell.status === 'skipped'
+                      ? '–'
+                      : cell.status === 'unrecorded'
+                        ? '?'
+                        : '·'
+              }}</small>
+            </button>
+          }
+        </div>
+      </details>
+    </article>
+  }
+</section>
