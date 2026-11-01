@@ -55,9 +55,17 @@ for (const viewport of [
       await expect(page.locator('flux-habit-today .habit-status')).toHaveText(
         'Completed',
       );
-      if (viewport.width < 600)
+      if (viewport.width < 600) {
         await page.locator('mobile-bottom-nav .add-task-button').click();
-      await workViewPage.addTask('Task still works alongside habits');
+        await page
+          .locator('add-task-bar.global .main-input')
+          .fill('Task still works alongside habits');
+        await page.locator('.e2e-add-task-submit').click();
+        await page.keyboard.press('Escape');
+        await expect(page.locator('add-task-bar.global')).toBeHidden();
+      } else {
+        await workViewPage.addTask('Task still works alongside habits');
+      }
       await expect(
         taskPage.getTaskByText('Task still works alongside habits'),
       ).toBeVisible();
@@ -125,4 +133,40 @@ test('habit data survives the real backup export/import and reload', async ({ pa
   await page.goto('/#/habits');
   await page.reload();
   await expect(page.locator('.habit-card .habit-status')).toHaveText('Completed');
+});
+
+test('historical numeric records keep their target after a later definition edit', async ({
+  page,
+}) => {
+  await openHabits(page);
+  await page.getByRole('button', { name: 'Create habit', exact: true }).click();
+  await page.locator('input[name="name"]').fill('Read pages');
+  await page.locator('select[name="type"]').selectOption('increase');
+  await page.locator('input[name="target"]').fill('20');
+  await page.locator('input[name="unit"]').fill('pages');
+  const today = await page.locator('input[name="start"]').inputValue();
+  const date = new Date(`${today}T12:00:00`);
+  date.setDate(date.getDate() - 1);
+  const yesterday = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  await page.locator('input[name="start"]').fill(yesterday);
+  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await page.getByLabel('Log date').fill(yesterday);
+  const card = page.locator('.habit-card');
+  await card.locator('input[type="number"]').fill('19');
+  await expect(card.locator('.habit-status')).toHaveText('Incomplete');
+  await card.locator('input[type="number"]').fill('20');
+  await expect(card.locator('.habit-status')).toHaveText('Completed');
+  await card.getByRole('button', { name: 'Edit', exact: true }).click();
+  await page.locator('input[name="target"]').fill('30');
+  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await expect(card.locator('.habit-status')).toHaveText('Completed');
+  await expect(card.locator('.habit-name small')).toContainText('20');
+  await page.getByLabel('Log date').fill(today);
+  await card.locator('input[type="number"]').fill('20');
+  await expect(card.locator('.habit-status')).toHaveText('Incomplete');
+  await expect(card.locator('.habit-name small')).toContainText('30');
+  await page.reload();
+  await page.getByLabel('Log date').fill(yesterday);
+  await expect(card.locator('input[type="number"]')).toHaveValue('20');
+  await expect(card.locator('.habit-status')).toHaveText('Completed');
 });

@@ -12,7 +12,7 @@ import { loadAllData } from '../../root-store/meta/load-all-data.action';
 import { AppDataComplete } from '../../op-log/model/model-config';
 import { HabitService } from './habit.service';
 import { entryKey } from './habit.model';
-import { habitRuleOn } from './habit.util';
+import { habitRuleOn, habitStatus } from './habit.util';
 
 describe('HabitService using the real extension-data reducer', () => {
   let service: HabitService;
@@ -98,6 +98,53 @@ describe('HabitService using the real extension-data reducer', () => {
     expect(service.data().habits.length).toBe(1);
     expect(service.data().entries[entryKey(id, '2026-11-01')].value).toBe(1);
     sub.unsubscribe();
+  });
+
+  it('preserves recorded interpretation until clearing, then uses the dated rule', () => {
+    create();
+    const habit = service.data().habits[0];
+    const key = entryKey(habit.id, today());
+    service.log(habit.id, today(), 1);
+    service.save({
+      ...habit,
+      rule: { ...habit.rules[0], type: 'increase', target: 20, unit: 'pages' },
+    });
+    service.log(habit.id, today(), 0);
+    let current = service.data();
+    expect(current.entries[key].rule.type).toBe('boolean');
+    expect(habitStatus(current.habits[0], today(), current.entries[key])).toBe(
+      'incomplete',
+    );
+    service.log(habit.id, today(), null, 'unrecorded');
+    service.log(habit.id, today(), 20);
+    current = service.data();
+    expect(current.entries[key].rule.unit).toBe('pages');
+    expect(habitStatus(current.habits[0], today(), current.entries[key])).toBe(
+      'completed',
+    );
+    service.log(habit.id, '2026-10-31', 1);
+    expect(service.data().entries[entryKey(habit.id, '2026-10-31')].rule.type).toBe(
+      'boolean',
+    );
+  });
+
+  it('updates scheduling on logical-day rollover and dates archive changes to that day', () => {
+    create();
+    const habit = service.data().habits[0];
+    service.log(habit.id, '2026-11-02', 1);
+    expect(service.data().entries[entryKey(habit.id, '2026-11-02')]).toBeUndefined();
+    today.set('2026-11-02');
+    expect(service.today()).toBe('2026-11-02');
+    expect(service.due().length).toBe(1);
+    service.archive(habit, false);
+    expect(service.due()).toEqual([]);
+    const archived = service.data().habits[0];
+    expect(habitRuleOn(archived, '2026-11-01')?.enabled).toBeTrue();
+    expect(habitRuleOn(archived, '2026-11-02')?.enabled).toBeFalse();
+    service.log(habit.id, '2026-11-02', 1);
+    expect(service.data().entries[entryKey(habit.id, '2026-11-02')]).toBeUndefined();
+    service.log(habit.id, '2026-11-01', 1);
+    expect(service.data().entries[entryKey(habit.id, '2026-11-01')].value).toBe(1);
   });
 
   it('does not overwrite unrelated plugin data', () => {
