@@ -33,7 +33,7 @@ Audited 2026-11-01 against commit `1e6153ab4c534264629cbb27ae510fb47b3c6408`.
   OneDrive). Credentials and transports remain entirely upstream-owned. No new
   server is necessary; the user must configure an existing supported provider.
 - Navigation: `routes/`, `core-ui/magic-side-nav/`; Habits is already controlled by
-  `appFeatures.isHabitsEnabled` (default true). Light/dark tokens live in
+  `appFeatures.isHabitsEnabled` (true in legacy defaults; disabled for minimal new installs). Light/dark tokens live in
   `src/styles/_css-variables.scss`; `en.json` generates `t.const.ts`. Other
   languages use existing fallback behavior until translated.
 - Tests: co-located Jasmine/Karma specs, Playwright E2E, framework-independent
@@ -64,10 +64,11 @@ reuses a plugin-named store as an extension record store; it is not a fake plugi
 installation and does not expose new public API. All coupling is in one service.
 A future rename/generalization of that upstream store is not part of this phase.
 
-Keys (namespace is reserved for this host feature):
+Keys (the leading colon cannot be produced by a valid plugin ID, so plugin
+installation/uninstallation cannot collide with this host-owned namespace):
 
-- `flux-habits-v1:habit:<id>` — one definition and dated rule revisions.
-- `flux-habits-v1:entry:<id>:YYYY-MM-DD` — one explicit daily entry.
+- `:flux-habits-v1:habit:<id>` — one definition and dated rule revisions.
+- `:flux-habits-v1:entry:<id>:YYYY-MM-DD` — one explicit daily entry.
 
 Each write immediately dispatches one persistent action, follows existing ordered
 op-log durability, and declares exactly one entity. No schema migration, new wire
