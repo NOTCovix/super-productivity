@@ -81,10 +81,23 @@ for (const winner of ['A', 'B'] as const) {
         await second.sync.syncAndWait();
         await expect(av).toHaveValue('18');
         await expect(bv).toHaveValue('18');
-        await a.page.reload();
-        await b.page.reload();
+        for (const client of [a, b]) {
+          await client.page.addInitScript(() => {
+            const state = window as unknown as Record<string, unknown>;
+            state.__SP_E2E_BLOCK_AUTO_SYNC = true;
+            state.__SP_E2E_BLOCK_IMMEDIATE_UPLOAD = true;
+            state.__SP_E2E_BLOCK_WS_DOWNLOAD = true;
+          });
+          await client.page.reload({ waitUntil: 'domcontentloaded' });
+        }
         await expect(av).toHaveValue('18');
         await expect(bv).toHaveValue('18');
+        for (const client of [a, b]) {
+          await client.page.getByLabel('Log date').fill(yesterday);
+          await expect(
+            client.page.locator('.habit-card input[type="number"]'),
+          ).toHaveValue('5');
+        }
       } finally {
         for (const client of clients) await closeClient(client);
       }

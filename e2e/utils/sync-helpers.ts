@@ -1,6 +1,7 @@
 import {
   type Browser,
   type BrowserContext,
+  type BrowserContextOptions,
   type Locator,
   type Page,
   type APIRequestContext,
@@ -142,11 +143,13 @@ export const setupSyncClient = async (
   browser: Browser,
   baseURL: string | undefined,
   acceptedConfirms: readonly RegExp[] = [],
+  contextOptions: Pick<BrowserContextOptions, 'serviceWorkers'> = {},
 ): Promise<{ context: BrowserContext; page: Page }> => {
   // A context created here does not inherit the config's user agent; the app
   // needs PLAYWRIGHT in it to start with every app feature on (as in the
   // regular suite) instead of the new-install set.
   const context = await browser.newContext({
+    ...contextOptions,
     baseURL,
     userAgent: 'PLAYWRIGHT WEBDAV-SYNC-CLIENT',
   });
