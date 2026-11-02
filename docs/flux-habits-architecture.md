@@ -47,7 +47,7 @@ standalone UI. Reuse `/habits` and the existing weekly tracker's navigation and
 headings via a generic row-template input. Custom habits and legacy counters share
 the same grid; a layout mixin keeps their date columns aligned. Detailed history
 and management are disclosures below it. Today uses the native task-section
-collapsible, expanded initially and placed after the existing work-view header,
+collapsible, expanded initially and placed after all Today task sections and the finish-day action,
 outside the task row hot path. Legacy counter data and actions are retained.
 
 Why not extend the counter map? `countOnDay` cannot distinguish a missing value,

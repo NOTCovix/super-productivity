@@ -20,10 +20,10 @@ import { HabitService } from './habit.service';
     MatIconModule,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'task-list-wrapper' },
   styles: `
     :host {
       display: block;
+      padding-top: var(--s3);
     }
   `,
   template: `

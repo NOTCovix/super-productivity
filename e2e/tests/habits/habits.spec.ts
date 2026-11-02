@@ -75,6 +75,16 @@ for (const viewport of [
       await expect(
         taskPage.getTaskByText('Task still works alongside habits'),
       ).toBeVisible();
+      const isAfterTasks = await page.locator('work-view').evaluate((view) => {
+        const task = view.querySelector('task');
+        const habits = view.querySelector('flux-habit-today');
+        return (
+          !!task &&
+          !!habits &&
+          !!(task.compareDocumentPosition(habits) & Node.DOCUMENT_POSITION_FOLLOWING)
+        );
+      });
+      expect(isAfterTasks).toBe(true);
       await page.goto('/#/habits');
       await openHabitDetails(page);
       await page
@@ -237,6 +247,7 @@ for (const viewport of [
         'Completed',
       );
       await expect(page.locator('habit-page')).toHaveCount(0);
+      await page.locator('flux-habit-today').scrollIntoViewIfNeeded();
       const heading = await page
         .locator('flux-habit-today .collapsible-header')
         .boundingBox();

@@ -178,3 +178,8 @@ case passed again against this UI. SuperSync's four earlier passes remain record
 above; its updated disclosure helper was typechecked but those four cases were not
 re-executed in this UI-only increment. No full root test/lint rerun or device claim
 is implied by these focused checks.
+
+The follow-up placement change keeps Habits as its own tab and renders its compact
+Today section after all task panels and the finish-day action. The 12 focused
+habit/task browser cases passed again, including a DOM-order assertion that the
+habit section follows actual task rows on desktop and phone widths.

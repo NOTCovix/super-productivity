@@ -31,7 +31,8 @@ Updated 2026-11-02. Base: Super Productivity 19.3.1 at
 - Electron TypeScript/preload build passed; Wayland helper skipped without Rust.
 
 - Manual UI feedback corrected: custom habits now share the native weekly grid;
-  creation uses existing form controls, and Today logging is expanded initially.
+  creation uses existing form controls, and Today logging is expanded initially
+  at the bottom of the task page.
   Desktop/mobile browser verification is recorded in the validation notes.
 
 ## In progress — review and release verification

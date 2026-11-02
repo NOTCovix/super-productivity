@@ -87,9 +87,6 @@
             </div>
           }
         </header>
-        @if (isTodayContext()) {
-          <flux-habit-today />
-        }
       }
 
       @if (pluginEmbedId(); as embedId) {
@@ -473,6 +470,9 @@
 
           @if (isOnTodayList() && isFinishDayEnabled()) {
             <finish-day-btn [hasDoneTasks]="hasDoneTasks()"></finish-day-btn>
+          }
+          @if (isTodayContext()) {
+            <flux-habit-today />
           }
         </div>
       }
