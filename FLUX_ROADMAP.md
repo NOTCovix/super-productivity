@@ -1,6 +1,6 @@
 # Flux roadmap
 
-Updated 2026-11-01. Base: Super Productivity 19.3.1 at
+Updated 2026-11-02. Base: Super Productivity 19.3.1 at
 `1e6153ab4c534264629cbb27ae510fb47b3c6408`.
 
 ## Completed — Phase 1 implementation
@@ -23,13 +23,21 @@ Updated 2026-11-01. Base: Super Productivity 19.3.1 at
   850 package tests plus release tooling). Fresh-context
   state/sync/privacy review completed; added regression coverage.
 
+- SuperSync real-transport conflict/restart coverage: four cases passed with the
+  unchanged server and Prisma client on a local PostgreSQL-protocol test backend.
+- WebDAV v2/v3 real-transport conflict/restart coverage: four cases passed.
+- Official v19.3.1 source-build downgrade/write/sync/offline-upgrade preservation:
+  one WebDAV v2 case passed, including an ordinary task created by the old client.
+- Electron TypeScript/preload build passed; Wayland helper skipped without Rust.
+
 ## In progress — review and release verification
 
 - Review PR on `feature/flux-habits`; do not merge until the
   [validation gaps](docs/flux-habits-validation.md) are resolved.
 - Confirm CI on its pinned browser; local suites passed on temporary Chromium 153.
-- Execute the four real-provider conflict scenarios, WebDAV and released-client
-  transport. Browser restart/backup coverage passed; provider sync is not yet proven.
+- Re-run provider cases on stock CI PostgreSQL/Apache infrastructure; local test
+  backends and the precise released-client scope are documented in validation.
+  Broader mixed-version paths and published binaries remain unverified.
 - Validate packaged Arch Linux / GNOME Wayland and actual Android devices,
   including offline restart, suspension, keyboard, safe areas and Linux–Android sync.
 - Benchmark multi-year history on mobile. Existing counters remain separate;

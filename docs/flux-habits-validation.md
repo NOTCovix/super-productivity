@@ -1,6 +1,9 @@
 # Flux habits validation
 
-Checked 2026-11-01. This is a review build, not a verified platform release.
+Updated 2026-11-02. This is a review build, not a verified platform release.
+The application, unit, full lint and task-regression checks below ran on November 1;
+November 2 added provider/compatibility coverage and the Electron build. No
+production application code changed in the second validation increment.
 
 ## Passed
 
@@ -48,24 +51,88 @@ app code, fixtures and assertions were unchanged. Karma needed a valid en-US loc
 - Direct `tsc -p src/tsconfig.app.json --noEmit` reports upstream workspace
   `rootDir` errors for package imports outside `src`. The Angular application
   build passed; the direct tsc command is not reported as passing.
-- Four SuperSync scenarios are authored and discoverable (both timestamp winners
-  and both upload orders; independent date preservation and restart). They have
-  **not run** against a real provider here: Docker is unavailable. Listing tests
-  is not execution. Run the existing provider command before release:
-  `npm run quiet -- e2e:supersync:file e2e/tests/sync/supersync-flux-habits.spec.ts --retries=0`.
-- WebDAV transport, released-client preservation and real Linux–Android sync
-  remain unverified. No conflict-resolution code was changed.
+- Docker and native PostgreSQL are unavailable. The standard provider scripts and
+  their stock PostgreSQL/Apache environments have not run here. The local provider
+  results below exercise real transport with explicitly different test backends.
+- GitHub reported no workflow runs/checks for this fork; CI on its pinned browser
+  remains unverified. No repository settings or authentication were changed.
 - Actual Arch/GNOME Wayland packaging and Android offline restarts, suspension,
   numeric IME, keyboard/safe areas and touch accessibility require devices.
+
+## Provider and released-client validation — November 2
+
+The local SuperSync setup used the unchanged server HTTP handlers and Prisma
+client against PGlite 0.5.14 through pglite-socket 0.2.17 (PostgreSQL wire protocol,
+one connection). Its database was initialized from the current Prisma schema.
+This exercises real frontend/server/SQL transport without mocked sync methods;
+it does not establish production PostgreSQL 16 concurrency, deployed migrations,
+or native device behavior.
+
+- SuperSync: **4 passed**, both timestamp winners and both upload orders.
+  Independent habit/day keys survive, same-day edits converge to the later value,
+  and both dates persist after restart with automatic upload/download blocked.
+  The final JSON report recorded 4 expected, 0 skipped, 0 unexpected and 0 flaky.
+- WebDAV: **4 passed**, v2/v3 file formats and both timestamp winners. Two browser
+  clients preserve independent dates, converge after concurrent same-day edits,
+  and retain both dates after restart with automatic sync blocked. Baseline,
+  historical, losing and winning values are distinct (0, 1, 3, 2).
+- Released client: **1 passed**, WebDAV v2 with an unmodified source build of
+  upstream v19.3.1, commit `1014df989d55497d6ec18b038de09aa25b6cd2bb`.
+  The original browser downgrades at the same origin/IndexedDB, creates and syncs
+  an ordinary task, and a fresh Flux client receives that task plus the habit.
+  Upgrading the original browser with WebDAV blocked recovers the habit name,
+  target, explicit zero and completion status. Service workers are blocked so
+  cached Flux assets cannot impersonate the old client.
+- Changed provider tests and the optional service-worker context setting passed
+  `checkFile` and a scoped TypeScript no-emit check. No production sync code changed.
+- `npm run quiet -- electron:build` completed TypeScript and preload bundling.
+  Rust/Cargo was unavailable, so the build script skipped the Wayland idle helper.
+  Electron runtime, packaging and native idle behavior were not tested.
+
+The local WebDAV server was WsgiDAV 4.4.0 / Cheroot 11.1.2 with a filesystem
+provider and loopback test credentials, with a CORS wrapper. A pre-test HTTP smoke
+check verified strong ETags, stale `If-Match` returning 412, and `If-None-Match`
+returning 412 without replacing existing content. This is not the stock CI Apache
+server. Temporary server/browser dependencies were installed outside application
+manifests; only synthetic test data was used.
+
+The released client was built from the official tag with the current worktree's
+build dependencies. This verifies one source-built downgrade/write/upload/fresh
+Flux receipt/offline upgrade scenario. It does not verify a fresh released client
+initially ingesting Flux data, other historical versions, WebDAV v3 mixed versions,
+or published Electron/Android binaries.
+
+Reproduce the focused cases in the standard Docker environment with the frontend
+running (compatibility assets must be built separately):
+
+```bash
+npm run quiet -- e2e:supersync:file e2e/tests/sync/supersync-flux-habits.spec.ts --retries=0
+npm run quiet -- e2e:webdav:file e2e/tests/sync/webdav-flux-habits.spec.ts --retries=0
+FLUX_COMPAT_OLD_ASSETS=/absolute/path/to/v19.3.1/browser \
+FLUX_COMPAT_NEW_ASSETS=/absolute/path/to/flux/browser \
+npm run quiet -- e2e:webdav:file e2e/tests/sync/webdav-flux-habits-released-client.spec.ts --retries=0
+```
+
+The compatibility test explicitly skips without both asset directories; such a skip
+is not validation. The local runs supplied them and required the relevant provider,
+used one worker and zero retries. One successful SuperSync exit lacked the final
+per-test text summary; an isolated rerun with a separate JSON reporter verified
+all four cases. Earlier test-harness failures (array passed to a
+variadic cleanup helper, leaving-task animation, and waiting for page `load` after
+restart) were corrected. Restart checks now wait for DOM readiness followed by
+actual UI data assertions. These were not production sync fixes.
 
 ## Review
 
 A fresh-context review examined the branch, diff, tracker and repository review
 guide. **Fixed:** two service regression tests covering stored interpretation,
 clear/re-record, historical rules, day rollover, future dates and archive boundary.
-**Not fixed:** provider/mixed-version/device execution and large-history scale are
-release gates. No material production defect was identified in the reviewed
-model/service/utility paths. This is not a GitHub approval.
+**Not fixed:** stock-provider CI, broader released-client coverage, native devices
+and large-history mobile scale remain release gates. A second review strengthened
+conflict values and blocked automatic sync during restart checks; final test
+assertions were reviewed without a remaining material gap for their stated scope.
+No material production defect was identified in the reviewed model/service/utility
+paths. This is not a GitHub approval.
 
 ## Scale residual
 
