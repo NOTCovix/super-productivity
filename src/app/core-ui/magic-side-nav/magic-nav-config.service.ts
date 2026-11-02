@@ -452,6 +452,14 @@ export class MagicNavConfigService {
       });
     }
 
+    items.push({
+      type: 'route',
+      id: 'journal',
+      label: T.F.JOURNAL.TITLE,
+      icon: NAV_SECTION_ICON.JOURNAL,
+      route: '/journal',
+    });
+
     return items;
   }
 

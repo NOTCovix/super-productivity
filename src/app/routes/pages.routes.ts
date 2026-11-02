@@ -14,3 +14,5 @@ export { PluginIndexComponent } from '../plugins/ui/plugin-index/plugin-index.co
 // separate dynamic import would split shared deps into extra startup chunks.
 export { DialogFocusSessionEditComponent } from '../features/metric/dialog-focus-session-edit/dialog-focus-session-edit.component';
 export { DialogSimpleCounterEditComponent } from '../features/simple-counter/dialog-simple-counter-edit/dialog-simple-counter-edit.component';
+
+export { JournalPageComponent } from '../features/journal/journal-page.component';

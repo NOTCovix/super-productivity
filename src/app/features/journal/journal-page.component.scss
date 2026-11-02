@@ -1,0 +1,31 @@
+:host {
+  display: block;
+}
+.journal-page {
+  max-width: var(--component-max-width);
+  margin: 0 auto;
+  padding: var(--s3) var(--s2);
+  box-sizing: border-box;
+}
+.day-navigation,
+.entry-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--s);
+}
+.entry-actions {
+  justify-content: space-between;
+  color: var(--text-color-muted);
+  font-size: var(--font-size-sm);
+}
+h2 {
+  font-size: var(--font-size-lg);
+  margin-top: var(--s3);
+}
+.entry-history {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  gap: var(--s-half);
+}

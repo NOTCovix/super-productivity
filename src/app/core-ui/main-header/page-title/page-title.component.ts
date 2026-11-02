@@ -409,6 +409,7 @@ export class PageTitleComponent {
     [/schedule$/, T.MH.SCHEDULE, NAV_SECTION_ICON.SCHEDULE],
     [/planner$/, T.MH.PLANNER, NAV_SECTION_ICON.PLANNER],
     [/boards$/, T.MH.BOARDS, NAV_SECTION_ICON.BOARDS],
+    [/journal$/, T.F.JOURNAL.TITLE, NAV_SECTION_ICON.JOURNAL],
     [/habits$/, T.MH.HABITS, NAV_SECTION_ICON.HABITS],
     [/search$/, T.MH.SEARCH, NAV_SECTION_ICON.SEARCH],
     [/scheduled-list$/, T.WW.RECURRING_TASKS, NAV_SECTION_ICON.RECURRING_TASKS],

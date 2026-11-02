@@ -5,6 +5,7 @@ export const NAV_SECTION_ICON = {
   SCHEDULE: 'schedule',
   BOARDS: 'grid_view',
   HABITS: 'heart_check',
+  JOURNAL: 'book',
   SEARCH: 'search',
   RECURRING_TASKS: 'repeat',
   DONATE: 'favorite',

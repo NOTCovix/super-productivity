@@ -1,3 +1,4 @@
+import { JournalTodayComponent } from '../journal/journal-today.component';
 import { HabitTodayComponent } from '../habits/habit-today.component';
 import {
   ChangeDetectionStrategy,
@@ -131,6 +132,7 @@ const INITIAL_CUSTOMIZED_UNDONE_TASKS: CustomizedUndoneTasks = { list: [] };
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     HabitTodayComponent,
+    JournalTodayComponent,
     CdkDropListGroup,
     CdkDropList,
     CdkDrag,
