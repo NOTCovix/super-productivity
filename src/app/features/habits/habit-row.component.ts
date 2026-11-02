@@ -23,9 +23,16 @@ import { habitRuleOn, habitStatus } from './habit.util';
       class="habit-row"
       [attr.data-habit]="habit().id"
     >
-      <mat-icon [style.color]="habit().color || null">{{
-        habit().icon || 'check_circle'
-      }}</mat-icon>
+      @if (habit().icon.startsWith(':')) {
+        <mat-icon
+          [svgIcon]="habit().icon"
+          [style.color]="habit().color || null"
+        />
+      } @else {
+        <mat-icon [style.color]="habit().color || null">{{
+          habit().icon || 'check_circle'
+        }}</mat-icon>
+      }
       <span class="habit-name"
         >{{ habit().name }}
         @if (rule(); as r) {

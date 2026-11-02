@@ -1,3 +1,4 @@
+import { openHabitDetails } from '../../utils/habit-helpers';
 import { test, expect } from '../../fixtures/test.fixture';
 import { Page } from '@playwright/test';
 import { ImportPage } from '../../pages/import.page';
@@ -8,6 +9,7 @@ const openHabits = async (page: Page): Promise<void> => {
   await toggle.waitFor();
   if (!(await toggle.isChecked())) await toggle.check();
   await page.goto('/#/habits');
+  await openHabitDetails(page);
   await expect(page.locator('flux-habit-manager')).toBeVisible();
 };
 
@@ -20,6 +22,7 @@ const createHabit = async (page: Page, name: string, type = 'boolean'): Promise<
     await page.locator('input[name="unit"]').fill('cups');
   }
   await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await openHabitDetails(page);
   await expect(page.locator('.habit-card').filter({ hasText: name })).toBeVisible();
 };
 
@@ -40,10 +43,12 @@ for (const viewport of [
       await card.getByRole('button', { name: 'Read a book', exact: true }).click();
       await expect(card.locator('.habit-status')).toHaveText('Completed');
       await page.reload();
+      await openHabitDetails(page);
       await expect(card.locator('.habit-status')).toHaveText('Completed');
       await card.getByRole('button', { name: 'Edit', exact: true }).click();
       await page.locator('input[name="name"]').fill('Read every day');
       await page.getByRole('button', { name: 'Save', exact: true }).click();
+      await openHabitDetails(page);
       const renamed = page.locator('.habit-card').filter({ hasText: 'Read every day' });
       await renamed.getByRole('button', { name: 'Archive', exact: true }).click();
       await expect(
@@ -51,7 +56,8 @@ for (const viewport of [
       ).toBeVisible();
       await renamed.getByRole('button', { name: 'Restore', exact: true }).click();
       await page.goto('/#/tag/TODAY/tasks');
-      await page.locator('flux-habit-today summary').click();
+      // Scheduled habits are visible immediately, without expanding a hidden panel.
+      await expect(page.locator('flux-habit-today flux-habit-row')).toBeVisible();
       await expect(page.locator('flux-habit-today .habit-status')).toHaveText(
         'Completed',
       );
@@ -70,6 +76,7 @@ for (const viewport of [
         taskPage.getTaskByText('Task still works alongside habits'),
       ).toBeVisible();
       await page.goto('/#/habits');
+      await openHabitDetails(page);
       await page
         .locator('.habit-card')
         .getByRole('button', { name: 'Delete', exact: true })
@@ -122,6 +129,7 @@ test('habit data survives the real backup export/import and reload', async ({ pa
   const path = await download.path();
   if (!path) throw new Error('Backup download was not saved');
   await page.goto('/#/habits');
+  await openHabitDetails(page);
   await page
     .locator('.habit-card')
     .getByRole('button', { name: 'Delete', exact: true })
@@ -131,7 +139,9 @@ test('habit data survives the real backup export/import and reload', async ({ pa
   await importPage.navigateToImportPage();
   await importPage.importBackupFile(path);
   await page.goto('/#/habits');
+  await openHabitDetails(page);
   await page.reload();
+  await openHabitDetails(page);
   await expect(page.locator('.habit-card .habit-status')).toHaveText('Completed');
 });
 
@@ -150,6 +160,7 @@ test('historical numeric records keep their target after a later definition edit
   const yesterday = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
   await page.locator('input[name="start"]').fill(yesterday);
   await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await openHabitDetails(page);
   await page.getByLabel('Log date').fill(yesterday);
   const card = page.locator('.habit-card');
   await card.locator('input[type="number"]').fill('19');
@@ -159,6 +170,7 @@ test('historical numeric records keep their target after a later definition edit
   await card.getByRole('button', { name: 'Edit', exact: true }).click();
   await page.locator('input[name="target"]').fill('30');
   await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await openHabitDetails(page);
   await expect(card.locator('.habit-status')).toHaveText('Completed');
   await expect(card.locator('.habit-name small')).toContainText('20');
   await page.getByLabel('Log date').fill(today);
@@ -166,7 +178,121 @@ test('historical numeric records keep their target after a later definition edit
   await expect(card.locator('.habit-status')).toHaveText('Incomplete');
   await expect(card.locator('.habit-name small')).toContainText('30');
   await page.reload();
+  await openHabitDetails(page);
   await page.getByLabel('Log date').fill(yesterday);
   await expect(card.locator('input[type="number"]')).toHaveValue('20');
   await expect(card.locator('.habit-status')).toHaveText('Completed');
+});
+
+for (const viewport of [
+  { width: 1280, height: 900 },
+  { width: 390, height: 844 },
+]) {
+  test.describe(`Native habit grid at ${viewport.width}px`, () => {
+    test.use({ viewport });
+    test('custom habits share the weekly grid and log directly into Today', async ({
+      page,
+    }) => {
+      await openHabits(page);
+      if (viewport.width === 390) {
+        await page.goto('/#/config');
+        await page
+          .locator('theme-selector mat-button-toggle[value="dark"] button')
+          .click();
+        await page.goto('/#/habits');
+      }
+      await createHabit(page, 'Native reading');
+      await page.locator('habit-tracker .disabled-section-header').click();
+      await page
+        .locator('habit-tracker .disabled-item')
+        .first()
+        .locator('button')
+        .first()
+        .click();
+      const grid = page.locator('habit-tracker .habit-grid');
+      const row = grid.locator('.custom-habit-row');
+      await expect(row).toHaveCount(1);
+      await expect(grid.locator('.habit-row')).toHaveCount(1);
+      await expect(row.locator('flux-habit-cell')).toHaveCount(7);
+      const customCell = await row.locator('flux-habit-cell').last().boundingBox();
+      const counterCell = await grid.locator('.habit-row .day-cell').last().boundingBox();
+      expect(customCell).not.toBeNull();
+      expect(counterCell).not.toBeNull();
+      const customHalfWidth = customCell!.width / 2;
+      const counterHalfWidth = counterCell!.width / 2;
+      const customCenter = customCell!.x + customHalfWidth;
+      const counterCenter = counterCell!.x + counterHalfWidth;
+      expect(Math.abs(customCenter - counterCenter)).toBeLessThan(1);
+      const today = row.locator('flux-habit-cell').last().getByRole('button');
+      await expect(today).toHaveAttribute('aria-pressed', 'false');
+      await today.click();
+      await expect(today).toHaveAttribute('aria-pressed', 'true');
+      await page.locator('.habit-details > summary').click();
+      await page.screenshot({
+        path: `.tmp/flux-validation/ui-grid-${viewport.width}.png`,
+        fullPage: true,
+      });
+      await page.goto('/#/tag/TODAY/tasks');
+      await expect(page.locator('flux-habit-today .habit-status')).toHaveText(
+        'Completed',
+      );
+      await expect(page.locator('habit-page')).toHaveCount(0);
+      const heading = await page
+        .locator('flux-habit-today .collapsible-header')
+        .boundingBox();
+      const appHeader = await page.locator('main-header').boundingBox();
+      expect(heading).not.toBeNull();
+      expect(appHeader).not.toBeNull();
+      expect(heading!.y).toBeGreaterThanOrEqual(appHeader!.y + appHeader!.height);
+      await page.screenshot({
+        path: `.tmp/flux-validation/ui-today-${viewport.width}.png`,
+        fullPage: true,
+      });
+      await page.locator('flux-habit-today flux-habit-row button[aria-pressed]').click();
+      await expect(page.locator('flux-habit-today .habit-status')).toHaveText(
+        'Incomplete',
+      );
+      await page.goto('/#/habits');
+      await expect(today).toHaveAttribute('aria-pressed', 'false');
+      await page.getByRole('button', { name: 'Create habit', exact: true }).click();
+      await expect(page.locator('input[name="name"][matInput]')).toBeVisible();
+      await page.screenshot({
+        path: `.tmp/flux-validation/ui-editor-${viewport.width}.png`,
+        fullPage: true,
+      });
+      await page.getByRole('button', { name: 'Cancel', exact: true }).click();
+      const overflow = await page
+        .locator('habit-tracker')
+        .evaluate((el) => el.scrollWidth > el.clientWidth + 1);
+      expect(overflow).toBe(false);
+    });
+  });
+}
+
+test('weekly numeric cells preserve zero, historical values and missing records', async ({
+  page,
+}) => {
+  await openHabits(page);
+  await page.getByRole('button', { name: 'Create habit', exact: true }).click();
+  await page.locator('input[name="name"]').fill('Native limit');
+  await page.locator('select[name="type"]').selectOption('limit');
+  await page.locator('input[name="target"]').fill('2');
+  const start = page.locator('input[name="start"]');
+  const day = await start.inputValue();
+  const date = new Date(`${day}T12:00:00`);
+  date.setDate(date.getDate() - 1);
+  const yesterday = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  await start.fill(yesterday);
+  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  const cells = page.locator('.custom-habit-row flux-habit-cell input');
+  await cells.nth(5).fill('1');
+  await cells.last().fill('0');
+  await expect(cells.last()).toHaveClass(/completed/);
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  await expect(cells.nth(5)).toHaveValue('1');
+  await expect(cells.last()).toHaveValue('0');
+  await cells.last().fill('');
+  await expect(cells.last()).not.toHaveClass(/completed/);
+  await page.goto('/#/tag/TODAY/tasks');
+  await expect(page.locator('flux-habit-today .habit-status')).toHaveText('Unrecorded');
 });

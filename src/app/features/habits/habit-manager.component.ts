@@ -4,7 +4,18 @@ import {
   computed,
   inject,
   signal,
+  input,
+  afterNextRender,
+  ElementRef,
+  Injector,
+  viewChild,
 } from '@angular/core';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { HabitTrackerComponent } from '../simple-counter/habit-tracker/habit-tracker.component';
+import { SimpleCounter } from '../simple-counter/simple-counter.model';
+import { HabitCellComponent } from './habit-cell.component';
 import { FormsModule, ReactiveFormsModule, UntypedFormGroup } from '@angular/forms';
 import { FormlyModule, FormlyFieldConfig } from '@ngx-formly/core';
 import { InputColorPickerComponent } from '../../ui/input-color-picker/input-color-picker.component';
@@ -29,6 +40,11 @@ import { HabitRowComponent } from './habit-row.component';
   selector: 'flux-habit-manager',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    MatFormFieldModule,
+    MatInputModule,
+    MatCheckboxModule,
+    HabitTrackerComponent,
+    HabitCellComponent,
     FormsModule,
     ReactiveFormsModule,
     FormlyModule,
@@ -42,8 +58,12 @@ import { HabitRowComponent } from './habit-row.component';
   styleUrl: './habit-manager.component.scss',
 })
 export class HabitManagerComponent {
+  readonly simpleCounters = input<SimpleCounter[]>([]);
+  readonly disabledSimpleCounters = input<SimpleCounter[]>([]);
   readonly service = inject(HabitService);
   private readonly _dialog = inject(MatDialog);
+  private readonly _injector = inject(Injector);
+  readonly nameInput = viewChild<ElementRef<HTMLInputElement>>('habitName');
   readonly T = T;
   readonly iconForm = new UntypedFormGroup({});
   readonly iconFields: FormlyFieldConfig[] = [
@@ -147,6 +167,9 @@ export class HabitManagerComponent {
         }
       : this._empty();
     this.editing.set(true);
+    afterNextRender(() => this.nameInput()?.nativeElement.focus(), {
+      injector: this._injector,
+    });
   }
 
   changeType(type: HabitType): void {

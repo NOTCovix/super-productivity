@@ -30,6 +30,10 @@ Updated 2026-11-02. Base: Super Productivity 19.3.1 at
   one WebDAV v2 case passed, including an ordinary task created by the old client.
 - Electron TypeScript/preload build passed; Wayland helper skipped without Rust.
 
+- Manual UI feedback corrected: custom habits now share the native weekly grid;
+  creation uses existing form controls, and Today logging is expanded initially.
+  Desktop/mobile browser verification is recorded in the validation notes.
+
 ## In progress — review and release verification
 
 - Review PR on `feature/flux-habits`; do not merge until the

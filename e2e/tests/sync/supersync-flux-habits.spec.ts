@@ -1,3 +1,4 @@
+import { openHabitDetails } from '../../utils/habit-helpers';
 import { test, expect } from '../../fixtures/supersync.fixture';
 import { Page } from '@playwright/test';
 import {
@@ -50,9 +51,11 @@ for (const winner of ['A', 'B'] as const) {
         const yesterday = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
         await a.page.locator('input[name="start"]').fill(yesterday);
         await a.page.getByRole('button', { name: 'Save', exact: true }).click();
+        await openHabitDetails(a.page);
         await a.sync.syncAndWait();
         await b.sync.syncAndWait();
         await b.page.goto('/#/habits');
+        await openHabitDetails(b.page);
         const av = a.page.locator('.habit-card input[type="number"]');
         const bv = b.page.locator('.habit-card input[type="number"]');
         // Offline edits to separate date keys must both survive the next sync.
@@ -89,6 +92,7 @@ for (const winner of ['A', 'B'] as const) {
             state.__SP_E2E_BLOCK_WS_DOWNLOAD = true;
           });
           await client.page.reload({ waitUntil: 'domcontentloaded' });
+          await openHabitDetails(client.page);
         }
         await expect(av).toHaveValue('18');
         await expect(bv).toHaveValue('18');

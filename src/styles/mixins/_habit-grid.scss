@@ -1,0 +1,19 @@
+// One column layout for native counters and custom habit rows in the same tracker.
+@mixin habit-grid-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) repeat(7, var(--s6));
+  gap: var(--s-half);
+  width: 100%;
+  min-width: 0;
+  align-items: center;
+  @media (max-width: 1000px) {
+    grid-template-columns: minmax(0, 1fr) repeat(7, var(--s5));
+  }
+  @media (max-width: 800px) {
+    grid-template-columns: minmax(0, 1fr) repeat(7, var(--s4));
+  }
+  @media (max-width: 600px) {
+    grid-template-columns: var(--s5) repeat(7, minmax(0, 1fr));
+    gap: 0;
+  }
+}

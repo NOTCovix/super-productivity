@@ -142,3 +142,39 @@ across five runs took 147, 89, 91, 83 and 78 ms. This excludes rendering, Indexe
 and provider transfer. The extension store is array-backed and full history is
 retained; benchmark on Android and optimize measured bottlenecks before broadly
 shipping multi-year history. No speculative cache or silent history pruning added.
+
+## UI correction after manual testing — November 2
+
+Manual screenshots exposed two gaps in the original UI assessment: the custom
+habit form used unstyled browser fields, and Today required opening a collapsed
+HTML disclosure before any logs appeared. Custom habits also used a separate list
+above the native weekly counter tracker. The earlier browser workflow explicitly
+expanded Today and therefore did not catch the visibility problem.
+
+The correction places custom habit rows inside the existing weekly tracker via a
+row-template input. Both row types share its navigation, day headings and a small
+column-layout mixin. The original counter actions and drag ordering remain intact.
+Custom Boolean cells toggle directly; numeric cells write directly through the
+existing habit/day service. Detailed history and management use disclosures below
+the grid. The editor uses existing Material fields, checkboxes and icon/color
+pickers in a constrained responsive layout. Today uses the existing task-section
+collapsible, expanded initially, with direct logging and a management link. SVG
+icons selected through the existing picker now use `svgIcon` correctly.
+
+No persisted model, storage namespace, reducer, provider or conflict policy changed.
+The focused habit/counter unit run passed all 25 existing tests. Browser tests now
+assert Today visibility without an expand click, weekly cell logging in both
+1280px and 390px layouts, and explicit zero/historical/missing numeric values.
+
+The final correction build passed 12 browser cases (9 habit workflows and 3 task
+CRUD regressions), with zero skips, failures or flaky results in the JSON report.
+The weekly-grid cases include a real enabled legacy counter, assert its date-cell
+centers align with the custom row, and use the actual appearance setting for a
+390px dark-theme run. Screenshots were inspected after route transitions completed;
+Today headings are asserted below the fixed app header at both widths. All 44
+existing work-view unit tests also passed, for 69 focused unit tests in this increment.
+A WebDAV v3/B-winner conflict/restart case and the v19.3.1 WebDAV v2 compatibility
+case passed again against this UI. SuperSync's four earlier passes remain recorded
+above; its updated disclosure helper was typechecked but those four cases were not
+re-executed in this UI-only increment. No full root test/lint rerun or device claim
+is implied by these focused checks.

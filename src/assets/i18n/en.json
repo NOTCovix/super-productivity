@@ -104,6 +104,8 @@
     "HABITS": {
       "TITLE": "Habits",
       "ADD": "Create habit",
+      "ADD_COUNTER": "Add a counter",
+      "RESET_COLOR": "Reset color",
       "MANAGE": "Manage habits and history",
       "NAME": "Name",
       "DESCRIPTION": "Description",
@@ -134,7 +136,7 @@
       "INCOMPLETE": "Incomplete",
       "CLEAR": "Clear record",
       "ENTRY_ACTIONS": "Entry actions",
-      "EMPTY": "Create a habit to start tracking. Existing counters remain available below.",
+      "EMPTY": "Create a habit to start tracking.",
       "LIMIT_HELP": "A limit is a ceiling, not a goal to consume. Explicitly recording zero can be successful; a blank entry is unknown.",
       "NO_TARGET_HELP": "Without a target, values are recorded but do not receive completion scores or streak credit.",
       "ANALYTICS_HELP": "Consistency = completed / elapsed scheduled days. Skips are excluded and preserve streaks without adding credit. Missing days count as misses after the day ends; today stays in progress. Targets and schedules retain dated history.",

@@ -1,3 +1,4 @@
+import { openHabitDetails } from '../../utils/habit-helpers';
 import type { BrowserContext, Page } from '@playwright/test';
 import { expect, test } from '../../fixtures/webdav.fixture';
 import { SyncPage } from '../../pages/sync.page';
@@ -67,9 +68,11 @@ for (const format of ['v2', 'v3'] as const) {
         const yesterday = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
         await a.page.locator('input[name="start"]').fill(yesterday);
         await a.page.getByRole('button', { name: 'Save', exact: true }).click();
+        await openHabitDetails(a.page);
         await sync(a);
         const b = await join();
         await b.page.goto('/#/habits');
+        await openHabitDetails(b.page);
         const av = a.page.locator('.habit-card input[type="number"]');
         const bv = b.page.locator('.habit-card input[type="number"]');
         await a.page.getByLabel('Log date').fill(yesterday);
@@ -108,6 +111,7 @@ for (const format of ['v2', 'v3'] as const) {
             'Completed',
           );
           await client.page.reload({ waitUntil: 'domcontentloaded' });
+          await openHabitDetails(client.page);
           await expect(
             client.page.locator('.habit-card input[type="number"]'),
           ).toHaveValue('2');

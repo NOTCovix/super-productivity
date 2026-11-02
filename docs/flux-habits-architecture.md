@@ -43,8 +43,12 @@ Audited 2026-11-01 against commit `1e6153ab4c534264629cbb27ae510fb47b3c6408`.
 ## Decision: native isolated feature with the existing keyed extension store
 
 `src/app/features/habits/` owns the model, calculations, host storage adapter and
-standalone UI. Reuse `/habits` and add a collapsed Today section, outside the task
-row hot path. Keep legacy counters available below the new feature.
+standalone UI. Reuse `/habits` and the existing weekly tracker's navigation and
+headings via a generic row-template input. Custom habits and legacy counters share
+the same grid; a layout mixin keeps their date columns aligned. Detailed history
+and management are disclosures below it. Today uses the native task-section
+collapsible, expanded initially and placed after the existing work-view header,
+outside the task row hot path. Legacy counter data and actions are retained.
 
 Why not extend the counter map? `countOnDay` cannot distinguish a missing value,
 explicit skip and recorded zero through all existing UI paths. More seriously,

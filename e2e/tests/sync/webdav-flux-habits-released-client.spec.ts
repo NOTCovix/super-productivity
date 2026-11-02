@@ -1,3 +1,4 @@
+import { openHabitDetails } from '../../utils/habit-helpers';
 import type { BrowserContext, Page } from '@playwright/test';
 import { expect, test } from '../../fixtures/webdav.fixture';
 import { SyncPage } from '../../pages/sync.page';
@@ -61,6 +62,7 @@ test('@webdav Flux habits survive an unmodified released client and an upgrade',
     await original.page.locator('select[name="type"]').selectOption('limit');
     await original.page.locator('input[name="target"]').fill('2');
     await original.page.getByRole('button', { name: 'Save', exact: true }).click();
+    await openHabitDetails(original.page);
     await original.page.locator('.habit-card input[type="number"]').fill('0');
     await expect(original.page.locator('.habit-card .habit-status')).toHaveText(
       'Completed',
@@ -87,6 +89,7 @@ test('@webdav Flux habits survive an unmodified released client and an upgrade',
     await freshSync.setupWebdavSync(config);
     expect(await waitForSyncComplete(fresh.page, freshSync)).toBe('success');
     await fresh.page.goto('/#/habits');
+    await openHabitDetails(fresh.page);
     await expect(fresh.page.locator('.habit-card input[type="number"]')).toHaveValue('0');
     await expect(fresh.page.locator('.habit-card .habit-status')).toHaveText('Completed');
     await expect(fresh.page.locator('.habit-card .habit-name')).toContainText(
@@ -109,6 +112,7 @@ test('@webdav Flux habits survive an unmodified released client and an upgrade',
     await original.page.route('http://127.0.0.1:2345/**', (route) => route.abort());
     await original.page.goto('/#/habits');
     await original.page.reload({ waitUntil: 'domcontentloaded' });
+    await openHabitDetails(original.page);
     await expect(original.page.locator('.habit-card input[type="number"]')).toHaveValue(
       '0',
     );
