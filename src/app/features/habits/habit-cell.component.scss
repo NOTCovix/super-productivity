@@ -1,0 +1,44 @@
+:host {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+}
+.habit-circle {
+  box-sizing: border-box;
+  width: var(--s4);
+  height: var(--s4);
+  max-width: 100%;
+  padding: 0;
+  border: 1px solid var(--text-color-muted);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-color);
+  text-align: center;
+  font: inherit;
+  font-size: var(--font-size-sm);
+  appearance: textfield;
+  &::-webkit-inner-spin-button,
+  &::-webkit-outer-spin-button {
+    appearance: none;
+    margin: 0;
+  }
+  &.completed {
+    background: var(--c-primary);
+    border-color: var(--c-primary);
+    color: var(--c-contrast);
+  }
+  &.incomplete {
+    border-color: var(--color-warning);
+  }
+  &:disabled {
+    opacity: var(--muted-alpha);
+    border-style: dashed;
+  }
+}
+button.habit-circle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}

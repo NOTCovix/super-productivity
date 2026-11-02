@@ -54,6 +54,13 @@
       }
     </div>
 
+    @if (additionalRows(); as rows) {
+      <ng-container
+        [ngTemplateOutlet]="rows"
+        [ngTemplateOutletContext]="{ $implicit: days() }"
+      />
+    }
+
     @for (counter of simpleCounters(); track counter.id) {
       <div
         class="habit-row"
@@ -131,6 +138,14 @@
   </div>
 
   <div class="footer-actions">
+    @if (additionalRows()) {
+      <button
+        mat-stroked-button
+        (click)="createCustomHabit.emit()"
+      >
+        <mat-icon>playlist_add</mat-icon>{{ T.F.HABITS.ADD | translate }}
+      </button>
+    }
     <button
       mat-stroked-button
       (click)="addHabit()"
@@ -138,7 +153,10 @@
     >
       <mat-icon>playlist_add</mat-icon>
       <span class="mdc-button__label">{{
-        T.F.SIMPLE_COUNTER.HABIT_TRACKER.ADD_HABIT | translate
+        (additionalRows()
+          ? T.F.HABITS.ADD_COUNTER
+          : T.F.SIMPLE_COUNTER.HABIT_TRACKER.ADD_HABIT
+        ) | translate
       }}</span>
     </button>
   </div>

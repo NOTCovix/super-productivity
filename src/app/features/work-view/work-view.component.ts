@@ -1,3 +1,4 @@
+import { HabitTodayComponent } from '../habits/habit-today.component';
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
@@ -129,6 +130,7 @@ const INITIAL_CUSTOMIZED_UNDONE_TASKS: CustomizedUndoneTasks = { list: [] };
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    HabitTodayComponent,
     CdkDropListGroup,
     CdkDropList,
     CdkDrag,
@@ -186,7 +188,7 @@ export class WorkViewComponent implements OnInit, OnDestroy {
 
   private _activeWorkContext = toSignal(this.workContextService.activeWorkContext$);
 
-  private _isTodayContext = computed(
+  readonly isTodayContext = computed(
     () => this._activeWorkContext()?.id === TODAY_TAG.id,
   );
 
@@ -197,7 +199,7 @@ export class WorkViewComponent implements OnInit, OnDestroy {
    * regular tag or a non-work-view route.
    */
   private _isEmbeddableContext = computed(
-    () => this.isProjectContext() || this._isTodayContext(),
+    () => this.isProjectContext() || this.isTodayContext(),
   );
 
   /**

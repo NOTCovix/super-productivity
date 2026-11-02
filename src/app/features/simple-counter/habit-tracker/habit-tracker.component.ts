@@ -5,6 +5,8 @@ import {
   inject,
   input,
   signal,
+  output,
+  TemplateRef,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CdkDrag, CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
@@ -28,7 +30,7 @@ import { LocaleDatePipe } from 'src/app/ui/pipes/locale-date.pipe';
 import { DateTimeFormatService } from 'src/app/core/date-time-format/date-time-format.service';
 import { DIALOG_AUTO_FOCUS_TYPING } from '../../../util/dialog-auto-focus';
 
-interface HabitDay {
+export interface HabitDay {
   str: string;
   date: Date;
   dow: number;
@@ -53,6 +55,8 @@ interface HabitDay {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HabitTrackerComponent {
+  readonly additionalRows = input<TemplateRef<{ $implicit: HabitDay[] }>>();
+  readonly createCustomHabit = output<void>();
   simpleCounters = input.required<SimpleCounter[]>();
   disabledSimpleCounters = input<SimpleCounter[]>([]);
 

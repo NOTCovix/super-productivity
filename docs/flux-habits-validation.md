@@ -1,0 +1,185 @@
+# Flux habits validation
+
+Updated 2026-11-02. This is a review build, not a verified platform release.
+The application, unit, full lint and task-regression checks below ran on November 1;
+November 2 added provider/compatibility coverage and the Electron build. No
+production application code changed in the second validation increment.
+
+## Passed
+
+| Check                                        | Result                                                                                                                             |
+| -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `npm ci --no-audit --no-fund`                | Installed existing lockfile; no dependency changes                                                                                 |
+| `npm run buildFrontend:dev`                  | Angular application build passed with 7 GB Node heap / one build worker                                                            |
+| `npm run quiet -- test`                      | Passed: 19,312 Berlin Angular tests, 6,694 Los Angeles subset tests (14 skipped), all 850 shared-package tests and release tooling |
+| `npm run quiet -- lint`                      | Full repository lint, style tokens, local lint-rule/tool tests and icon checks passed                                              |
+| `checkFile` on changed non-generated TS/SCSS | Passed; generated translation keys regenerated and Prettier-formatted separately                                                   |
+| Habit utility specs                          | 7 passed                                                                                                                           |
+| Habit service specs                          | 6 passed, using actual extension-data reducer                                                                                      |
+| Existing habit-tracker component specs       | 12 passed                                                                                                                          |
+| Habit browser E2E                            | 6 passed: desktop/mobile workflows, limit semantics, actual backup export/import/reload, historical edits                          |
+| Existing task CRUD browser E2E               | 3 passed                                                                                                                           |
+| Sync-core                                    | 287 passed, including package test typecheck                                                                                       |
+| Shared-schema                                | 95 passed                                                                                                                          |
+| Sync-providers                               | 468 passed, including package test typecheck                                                                                       |
+| `git diff --check`                           | Passed                                                                                                                             |
+
+The browser E2E ran on the built application through the existing Playwright
+fixtures. It clicked the real UI, reloaded actual browser IndexedDB state, exported
+and restored an actual JSON backup, and added/edited/deleted ordinary tasks.
+Viewport coverage: 1280×900 and 390×844. The history/limit view was also visually
+inspected at desktop and phone widths. This is not Android device verification.
+
+Local browser installation required a temporary Chromium 153 binary (the pinned
+Playwright Chromium 149 download returned a truncated archive). Fonts, launcher,
+static server and test-config overrides stayed outside the repository. The override
+changed only executable path, one worker, static base URL and video recording;
+app code, fixtures and assertions were unchanged. Karma needed a valid en-US locale.
+
+## Execution caveats and unverified checks
+
+- The initial default-heap baseline compile ran out of worker memory. The existing
+  counter component suite later passed with the larger heap; a pre-change full
+  assertion baseline was not established.
+- An early full affected run compiled but stopped after browser locale failures
+  (`en-us@posix`) and a disconnect. This was not counted as a pass.
+- A full `npm test` attempt passed all three shared package suites and release
+  tooling, then esbuild stopped with `all goroutines are asleep - deadlock!` during
+  broad Angular test compilation. A final serial retry with a valid browser locale
+  passed the complete command in 438 seconds; these earlier failures are not
+  presented as product failures or hidden as successful runs.
+- Direct `tsc -p src/tsconfig.app.json --noEmit` reports upstream workspace
+  `rootDir` errors for package imports outside `src`. The Angular application
+  build passed; the direct tsc command is not reported as passing.
+- Docker and native PostgreSQL are unavailable. The standard provider scripts and
+  their stock PostgreSQL/Apache environments have not run here. The local provider
+  results below exercise real transport with explicitly different test backends.
+- GitHub reported no workflow runs/checks for this fork; CI on its pinned browser
+  remains unverified. No repository settings or authentication were changed.
+- Actual Arch/GNOME Wayland packaging and Android offline restarts, suspension,
+  numeric IME, keyboard/safe areas and touch accessibility require devices.
+
+## Provider and released-client validation — November 2
+
+The local SuperSync setup used the unchanged server HTTP handlers and Prisma
+client against PGlite 0.5.14 through pglite-socket 0.2.17 (PostgreSQL wire protocol,
+one connection). Its database was initialized from the current Prisma schema.
+This exercises real frontend/server/SQL transport without mocked sync methods;
+it does not establish production PostgreSQL 16 concurrency, deployed migrations,
+or native device behavior.
+
+- SuperSync: **4 passed**, both timestamp winners and both upload orders.
+  Independent habit/day keys survive, same-day edits converge to the later value,
+  and both dates persist after restart with automatic upload/download blocked.
+  The final JSON report recorded 4 expected, 0 skipped, 0 unexpected and 0 flaky.
+- WebDAV: **4 passed**, v2/v3 file formats and both timestamp winners. Two browser
+  clients preserve independent dates, converge after concurrent same-day edits,
+  and retain both dates after restart with automatic sync blocked. Baseline,
+  historical, losing and winning values are distinct (0, 1, 3, 2).
+- Released client: **1 passed**, WebDAV v2 with an unmodified source build of
+  upstream v19.3.1, commit `1014df989d55497d6ec18b038de09aa25b6cd2bb`.
+  The original browser downgrades at the same origin/IndexedDB, creates and syncs
+  an ordinary task, and a fresh Flux client receives that task plus the habit.
+  Upgrading the original browser with WebDAV blocked recovers the habit name,
+  target, explicit zero and completion status. Service workers are blocked so
+  cached Flux assets cannot impersonate the old client.
+- Changed provider tests and the optional service-worker context setting passed
+  `checkFile` and a scoped TypeScript no-emit check. No production sync code changed.
+- `npm run quiet -- electron:build` completed TypeScript and preload bundling.
+  Rust/Cargo was unavailable, so the build script skipped the Wayland idle helper.
+  Electron runtime, packaging and native idle behavior were not tested.
+
+The local WebDAV server was WsgiDAV 4.4.0 / Cheroot 11.1.2 with a filesystem
+provider and loopback test credentials, with a CORS wrapper. A pre-test HTTP smoke
+check verified strong ETags, stale `If-Match` returning 412, and `If-None-Match`
+returning 412 without replacing existing content. This is not the stock CI Apache
+server. Temporary server/browser dependencies were installed outside application
+manifests; only synthetic test data was used.
+
+The released client was built from the official tag with the current worktree's
+build dependencies. This verifies one source-built downgrade/write/upload/fresh
+Flux receipt/offline upgrade scenario. It does not verify a fresh released client
+initially ingesting Flux data, other historical versions, WebDAV v3 mixed versions,
+or published Electron/Android binaries.
+
+Reproduce the focused cases in the standard Docker environment with the frontend
+running (compatibility assets must be built separately):
+
+```bash
+npm run quiet -- e2e:supersync:file e2e/tests/sync/supersync-flux-habits.spec.ts --retries=0
+npm run quiet -- e2e:webdav:file e2e/tests/sync/webdav-flux-habits.spec.ts --retries=0
+FLUX_COMPAT_OLD_ASSETS=/absolute/path/to/v19.3.1/browser \
+FLUX_COMPAT_NEW_ASSETS=/absolute/path/to/flux/browser \
+npm run quiet -- e2e:webdav:file e2e/tests/sync/webdav-flux-habits-released-client.spec.ts --retries=0
+```
+
+The compatibility test explicitly skips without both asset directories; such a skip
+is not validation. The local runs supplied them and required the relevant provider,
+used one worker and zero retries. One successful SuperSync exit lacked the final
+per-test text summary; an isolated rerun with a separate JSON reporter verified
+all four cases. Earlier test-harness failures (array passed to a
+variadic cleanup helper, leaving-task animation, and waiting for page `load` after
+restart) were corrected. Restart checks now wait for DOM readiness followed by
+actual UI data assertions. These were not production sync fixes.
+
+## Review
+
+A fresh-context review examined the branch, diff, tracker and repository review
+guide. **Fixed:** two service regression tests covering stored interpretation,
+clear/re-record, historical rules, day rollover, future dates and archive boundary.
+**Not fixed:** stock-provider CI, broader released-client coverage, native devices
+and large-history mobile scale remain release gates. A second review strengthened
+conflict values and blocked automatic sync during restart checks; final test
+assertions were reviewed without a remaining material gap for their stated scope.
+No material production defect was identified in the reviewed model/service/utility
+paths. This is not a GitHub approval.
+
+## Scale residual
+
+A Node benchmark with ten habits over five years produced 18,280 records and
+5,685,311 bytes of snapshot JSON. Parsing and calculating every habit's statistics
+across five runs took 147, 89, 91, 83 and 78 ms. This excludes rendering, IndexedDB
+and provider transfer. The extension store is array-backed and full history is
+retained; benchmark on Android and optimize measured bottlenecks before broadly
+shipping multi-year history. No speculative cache or silent history pruning added.
+
+## UI correction after manual testing — November 2
+
+Manual screenshots exposed two gaps in the original UI assessment: the custom
+habit form used unstyled browser fields, and Today required opening a collapsed
+HTML disclosure before any logs appeared. Custom habits also used a separate list
+above the native weekly counter tracker. The earlier browser workflow explicitly
+expanded Today and therefore did not catch the visibility problem.
+
+The correction places custom habit rows inside the existing weekly tracker via a
+row-template input. Both row types share its navigation, day headings and a small
+column-layout mixin. The original counter actions and drag ordering remain intact.
+Custom Boolean cells toggle directly; numeric cells write directly through the
+existing habit/day service. Detailed history and management use disclosures below
+the grid. The editor uses existing Material fields, checkboxes and icon/color
+pickers in a constrained responsive layout. Today uses the existing task-section
+collapsible, expanded initially, with direct logging and a management link. SVG
+icons selected through the existing picker now use `svgIcon` correctly.
+
+No persisted model, storage namespace, reducer, provider or conflict policy changed.
+The focused habit/counter unit run passed all 25 existing tests. Browser tests now
+assert Today visibility without an expand click, weekly cell logging in both
+1280px and 390px layouts, and explicit zero/historical/missing numeric values.
+
+The final correction build passed 12 browser cases (9 habit workflows and 3 task
+CRUD regressions), with zero skips, failures or flaky results in the JSON report.
+The weekly-grid cases include a real enabled legacy counter, assert its date-cell
+centers align with the custom row, and use the actual appearance setting for a
+390px dark-theme run. Screenshots were inspected after route transitions completed;
+Today headings are asserted below the fixed app header at both widths. All 44
+existing work-view unit tests also passed, for 69 focused unit tests in this increment.
+A WebDAV v3/B-winner conflict/restart case and the v19.3.1 WebDAV v2 compatibility
+case passed again against this UI. SuperSync's four earlier passes remain recorded
+above; its updated disclosure helper was typechecked but those four cases were not
+re-executed in this UI-only increment. No full root test/lint rerun or device claim
+is implied by these focused checks.
+
+The follow-up placement change keeps Habits as its own tab and renders its compact
+Today section after all task panels and the finish-day action. The 12 focused
+habit/task browser cases passed again, including a DOM-order assertion that the
+habit section follows actual task rows on desktop and phone widths.

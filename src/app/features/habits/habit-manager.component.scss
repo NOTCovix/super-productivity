@@ -1,0 +1,115 @@
+@use '../../../styles/mixins/habit-grid' as *;
+.habits {
+  padding: var(--s2) 0;
+}
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s);
+}
+.editor {
+  display: grid;
+  gap: var(--s2);
+  padding: var(--s2);
+  background: var(--card-bg);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  border-radius: var(--card-border-radius);
+  margin-bottom: var(--s2);
+}
+.weekday {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-half);
+  margin-right: var(--s);
+}
+.habit-card {
+  padding: var(--s2) 0;
+  border-bottom: 1px solid var(--separator-color);
+}
+.calendar {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: var(--s-half);
+}
+.calendar-day {
+  min-height: var(--s6);
+  padding: var(--s-half);
+  color: var(--text-color);
+  background: var(--card-bg);
+  border: 1px solid var(--separator-color);
+  small {
+    display: block;
+    overflow-wrap: anywhere;
+    font-size: var(--font-size-xs);
+  }
+  &.completed {
+    border-color: var(--color-success);
+  }
+  &.incomplete {
+    border-color: var(--color-warning);
+  }
+}
+
+:host {
+  display: block;
+}
+.editor-icon,
+.editor-help,
+.schedule,
+.editor-actions {
+  grid-column: 1 / -1;
+}
+.schedule {
+  min-width: 0;
+  border: 0;
+  padding: 0;
+  color: var(--text-color-muted);
+}
+.editor-help {
+  margin: 0;
+  color: var(--text-color-muted);
+}
+.habit-details {
+  border-bottom: 1px solid var(--separator-color);
+  padding: var(--s2) var(--s);
+  summary {
+    cursor: pointer;
+    font-size: var(--font-size-sm);
+    color: var(--text-color-muted);
+  }
+}
+.custom-habit-row {
+  @include habit-grid-row;
+  padding: var(--s) 0;
+  border-bottom: 1px solid var(--separator-color);
+}
+.custom-habit-title {
+  display: flex;
+  align-items: center;
+  gap: var(--s);
+  border: 0;
+  background: transparent;
+  color: var(--text-color);
+  font: inherit;
+  text-align: start;
+  padding: 0 var(--s);
+  min-width: 0;
+  min-height: var(--s5);
+  cursor: pointer;
+  span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  mat-icon {
+    flex-shrink: 0;
+  }
+  @media (max-width: 600px) {
+    padding: 0;
+    justify-content: center;
+    span {
+      display: none;
+    }
+  }
+}

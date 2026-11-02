@@ -1,26 +1,28 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SimpleCounterService } from '../../features/simple-counter/simple-counter.service';
-import { HabitTrackerComponent } from '../../features/simple-counter/habit-tracker/habit-tracker.component';
+import { HabitManagerComponent } from '../../features/habits/habit-manager.component';
 import { map } from 'rxjs/operators';
 
 @Component({
   selector: 'habit-page',
   standalone: true,
-  imports: [CommonModule, HabitTrackerComponent],
+  imports: [CommonModule, HabitManagerComponent],
   template: `
     <div class="page-wrapper">
-      <habit-tracker
+      <flux-habit-manager
         [simpleCounters]="(simpleCounters$ | async) || []"
         [disabledSimpleCounters]="(disabledSimpleCounters$ | async) || []"
-      ></habit-tracker>
+      />
     </div>
   `,
   styles: [
     `
       .page-wrapper {
-        padding: 16px;
+        padding: var(--s2);
         width: 100%;
+        max-width: var(--component-max-width);
+        box-sizing: border-box;
         margin: 0 auto;
       }
     `,
