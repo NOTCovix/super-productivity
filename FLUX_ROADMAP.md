@@ -48,7 +48,7 @@ Updated 2026-11-02. Base: Super Productivity 19.3.1 at
 - Benchmark multi-year history on mobile. Existing counters remain separate;
   automatic migration into the new habit model is not implemented.
 
-## In progress — Phase 2, journaling foundation
+## Completed — Phase 2 first journal increment
 
 - Branch `feature/flux-journal`, based on `feature/flux-habits`; keep the feature
   review separate from the habit implementation and its device release gates.
@@ -58,8 +58,18 @@ Updated 2026-11-02. Base: Super Productivity 19.3.1 at
   existing metric field/action, backup and sync paths. No new database or schema.
 - Debounced autosave with date-bound flush on blur, navigation and unmount;
   historical browsing/backfilling and clearing only the selected day's text.
-- Unit, browser, backup and real-provider validation in progress. Mood,
-  fulfillment, meaningful activities and structured review are not implemented.
+- [Validation](docs/flux-journal-validation.md): all 131 focused unit tests,
+  five journal browser workflows, habit/task regressions, one WebDAV round trip,
+  full root tests and lint passed. Independent journal review completed.
+- Mood, fulfillment, meaningful activities and structured review are not implemented.
+
+## In progress — journal release verification
+
+- Broader same-date text/rating conflicts, remote clearing, stock-provider CI and
+  released-client/device execution. The first provider case covers independent dates.
+- Multi-year mobile responsiveness and abrupt process termination before autosave.
+- Keep the journal PR separate and based on `feature/flux-habits` until that branch
+  is merged or rebased; neither draft represents a verified native release.
 
 ## Planned — later phases
 

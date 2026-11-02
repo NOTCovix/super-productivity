@@ -47,7 +47,10 @@ The real-provider case covers independent dates/restart, not concurrent edits to
 the same reflection, reflection-versus-rating conflicts, remote clearing, every
 supported provider or released binaries. The existing metric action and fields
 are unchanged, but these broader paths still need explicit release validation.
-The full root suite's final outcome is recorded below once available.
+The complete root `npm test` command passed in 418 seconds: 19,326 Berlin
+Angular tests, 6,694 Los Angeles subset tests (14 skipped), all 850 shared-package
+tests (287 sync-core, 95 shared-schema, 468 sync-providers), and release tooling.
+The skipped subset cases are not counted as verified behavior.
 
 Autosave flushes normal blur/date changes/editor destruction. Abrupt browser or
 process termination before a pending write is durable is not verified. Existing
