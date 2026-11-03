@@ -90,6 +90,13 @@ export const APP_ROUTES: Routes = [
     canActivate: [FeatureEnabledGuard, FocusOverlayOpenGuard],
   },
   {
+    path: 'journal',
+    loadComponent: () =>
+      import('./routes/pages.routes').then((m) => m.JournalPageComponent),
+    data: { page: 'journal' },
+    canActivate: [FocusOverlayOpenGuard],
+  },
+  {
     path: 'habits',
     loadComponent: () =>
       import('./routes/pages.routes').then((m) => m.HabitPageComponent),

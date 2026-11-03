@@ -48,13 +48,37 @@ Updated 2026-11-02. Base: Super Productivity 19.3.1 at
 - Benchmark multi-year history on mobile. Existing counters remain separate;
   automatic migration into the new habit model is not implemented.
 
+## Completed — Phase 2 first journal increment
+
+- Branch `feature/flux-journal`, based on `feature/flux-habits`; keep the feature
+  review separate from the habit implementation and its device release gates.
+- [Journal architecture and reuse decision](docs/flux-journal-architecture.md).
+- Native Journal tab and a compact editor at the bottom of Today.
+- One dated entry shared with the existing daily-review reflection, using the
+  existing metric field/action, backup and sync paths. No new database or schema.
+- Debounced autosave with date-bound flush on blur, navigation and unmount;
+  historical browsing/backfilling and clearing only the selected day's text.
+- [Validation](docs/flux-journal-validation.md): all 131 focused unit tests,
+  five journal browser workflows, habit/task regressions, one WebDAV round trip,
+  full root tests and lint passed. Independent journal review completed.
+- Mood, fulfillment, meaningful activities and structured review are not implemented.
+
+## In progress — journal release verification
+
+- Broader same-date text/rating conflicts, remote clearing, stock-provider CI and
+  released-client/device execution. The first provider case covers independent dates.
+- Multi-year mobile responsiveness and abrupt process termination before autosave.
+- Keep the journal PR separate and based on `feature/flux-habits` until that branch
+  is merged or rebased; neither draft represents a verified native release.
+
 ## Planned — later phases
 
-1. Journaling, mood/fulfillment and structured reflection.
+1. Extend the journal foundation with mood/fulfillment, meaningful activities and
+   structured reflection, plus broader conflict and device validation.
 2. Manual expense tracking, budgets, categories; then Tasker financial SMS
    import with explicit format, deduplication and local parsing.
 3. Optional Gemini coaching with explicit approval for generated changes.
 4. Platform-specific screen-time collection and cross-device summaries.
 5. Guardian restrictions, allowances and controlled overrides.
 
-Future features are not part of this PR. No personal data is sent to AI services.
+Later milestones are separate from the habits and journal-foundation PRs. No personal data is sent to AI services.

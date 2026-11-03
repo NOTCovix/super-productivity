@@ -101,6 +101,21 @@
     }
   },
   "F": {
+    "JOURNAL": {
+      "TITLE": "Journal",
+      "ENTRY": "Daily entry",
+      "AUTOSAVE": "Changes are saved automatically.",
+      "DATE": "Entry date",
+      "PREVIOUS": "Previous day",
+      "NEXT": "Next day",
+      "TODAY": "Today",
+      "SHARED": "This entry is shared with your daily review.",
+      "HISTORY": "Previous entries",
+      "EMPTY": "Your entries will appear here as you write.",
+      "OPEN": "Open journal and history",
+      "CLEAR": "Clear entry",
+      "CLEAR_CONFIRM": "Delete the reflection for this date? Focus sessions and ratings will be kept."
+    },
     "HABITS": {
       "TITLE": "Habits",
       "ADD": "Create habit",
